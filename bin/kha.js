@@ -159,6 +159,7 @@ _$List_ListIterator.prototype = {
 	,__class__: _$List_ListIterator
 };
 var Main = function() {
+	this.matrix = new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1);
 	this.rotationSpeed = 0.08;
 	this.theta = 0.0;
 	this.scaleY = 1.5;
@@ -208,11 +209,12 @@ Main.prototype = {
 	,gridImage2: null
 	,unicornSequence: null
 	,sequenceSprite: null
+	,matrix: null
 	,loadAll: function() {
-		haxe_Log.trace("loadAll",{ fileName : "Main.hx", lineNumber : 47, className : "Main", methodName : "loadAll"});
+		haxe_Log.trace("loadAll",{ fileName : "Main.hx", lineNumber : 49, className : "Main", methodName : "loadAll"});
 		this.image = kha_Assets.images.colorGrid;
 		this.unicornSequence = { gridX : 132, gridY : 80, totalRows : 8, totalCols : 1, scaleX : 0.7, scaleY : 0.7, image : kha_Assets.images.unicorn};
-		this.sequenceSprite = new gridSheet_SequenceSprite(100,100,1.);
+		this.sequenceSprite = new gridSheet_SequenceSprite(100,100,1.,new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1));
 		this.gridImage = new gridSheet_GridSheet(this.unicornSequence);
 		this.gridImage2 = new gridSheet_GridSheet(this.unicornSequence);
 		this.startRendering();
@@ -229,48 +231,195 @@ Main.prototype = {
 		g.begin(true,-1);
 		this.x = this.centreX + this.radius * Math.sin(this.theta);
 		this.y = this.centreY + this.radius * Math.cos(this.theta);
-		this.sequenceSprite.x = this.x;
-		this.sequenceSprite.y = this.y;
-		this.gridImage.renderGrid(g,this.gridImage);
+		this.sequenceSprite.x = this.centreX - this.unicornSequence.gridX / 2 * this.unicornSequence.scaleX;
+		this.sequenceSprite.y = this.centreY - this.unicornSequence.gridY / 2 * this.unicornSequence.scaleY;
+		this.gridImage.renderGrid(g,this);
 		this.theta += this.rotationSpeed;
 		this.x = this.centreX + this.radius * Math.sin(this.theta);
 		this.y = this.centreY + this.radius * Math.cos(this.theta);
-		this.sequenceSprite.x = this.x;
-		this.sequenceSprite.y = this.y;
+		this.sequenceSprite.x = this.centreX - this.unicornSequence.gridX / 2 * this.unicornSequence.scaleX;
+		this.sequenceSprite.y = this.centreY - this.unicornSequence.gridY / 2 * this.unicornSequence.scaleY;
+		var dx = this.sequenceSprite.x + this.unicornSequence.gridX / 2 * this.unicornSequence.scaleX;
+		var dy = this.sequenceSprite.y + this.unicornSequence.gridY / 2 * this.unicornSequence.scaleY;
+		var _this__22;
+		var _this__21;
+		var _this__20;
+		var _this__12;
+		var _this__11;
+		var _this__10;
+		var _this__02;
+		var _this__01;
+		var _this__00;
+		var _this__221;
+		var _this__211;
+		var _this__201;
+		var _this__121;
+		var _this__111;
+		var _this__101;
+		var _this__021;
+		var _this__011;
+		var _this__001 = 1;
+		_this__101 = 0;
+		_this__201 = dx;
+		_this__011 = 0;
+		_this__111 = 1;
+		_this__211 = dy;
+		_this__021 = 0;
+		_this__121 = 0;
+		_this__221 = 1;
+		var m__22;
+		var m__21;
+		var m__20;
+		var m__12;
+		var m__11;
+		var m__10;
+		var m__02;
+		var m__01;
+		var m__00;
+		var alpha = -this.theta;
+		m__00 = Math.cos(alpha);
+		m__10 = -Math.sin(alpha);
+		m__20 = 0;
+		m__01 = Math.sin(alpha);
+		m__11 = Math.cos(alpha);
+		m__21 = 0;
+		m__02 = 0;
+		m__12 = 0;
+		m__22 = 1;
+		_this__00 = _this__001 * m__00 + _this__101 * m__01 + _this__201 * m__02;
+		_this__10 = _this__001 * m__10 + _this__101 * m__11 + _this__201 * m__12;
+		_this__20 = _this__001 * m__20 + _this__101 * m__21 + _this__201 * m__22;
+		_this__01 = _this__011 * m__00 + _this__111 * m__01 + _this__211 * m__02;
+		_this__11 = _this__011 * m__10 + _this__111 * m__11 + _this__211 * m__12;
+		_this__21 = _this__011 * m__20 + _this__111 * m__21 + _this__211 * m__22;
+		_this__02 = _this__021 * m__00 + _this__121 * m__01 + _this__221 * m__02;
+		_this__12 = _this__021 * m__10 + _this__121 * m__11 + _this__221 * m__12;
+		_this__22 = _this__021 * m__20 + _this__121 * m__21 + _this__221 * m__22;
+		var m__221;
+		var m__211;
+		var m__201;
+		var m__121;
+		var m__111;
+		var m__101;
+		var m__021;
+		var m__011;
+		var m__001 = 1;
+		m__101 = 0;
+		m__201 = -dx;
+		m__011 = 0;
+		m__111 = 1;
+		m__211 = -dy;
+		m__021 = 0;
+		m__121 = 0;
+		m__221 = 1;
+		var tmp = new kha_math_FastMatrix3(_this__00 * m__001 + _this__10 * m__011 + _this__20 * m__021,_this__00 * m__101 + _this__10 * m__111 + _this__20 * m__121,_this__00 * m__201 + _this__10 * m__211 + _this__20 * m__221,_this__01 * m__001 + _this__11 * m__011 + _this__21 * m__021,_this__01 * m__101 + _this__11 * m__111 + _this__21 * m__121,_this__01 * m__201 + _this__11 * m__211 + _this__21 * m__221,_this__02 * m__001 + _this__12 * m__011 + _this__22 * m__021,_this__02 * m__101 + _this__12 * m__111 + _this__22 * m__121,_this__02 * m__201 + _this__12 * m__211 + _this__22 * m__221);
+		this.sequenceSprite.matrix = tmp;
 		this.gridImage2.renderSequence(g,this.sequenceSprite);
 		g.end();
 	}
 	,grids: function(g) {
 		this.x = this.centreX + this.radius * Math.sin(this.theta);
 		this.y = this.centreY + this.radius * Math.cos(this.theta);
-		this.sequenceSprite.x = this.x;
-		this.sequenceSprite.y = this.y;
-		this.gridImage.renderGrid(g,this.gridImage);
+		this.sequenceSprite.x = this.centreX - this.unicornSequence.gridX / 2 * this.unicornSequence.scaleX;
+		this.sequenceSprite.y = this.centreY - this.unicornSequence.gridY / 2 * this.unicornSequence.scaleY;
+		this.gridImage.renderGrid(g,this);
 		this.theta += this.rotationSpeed;
 	}
 	,animate: function(g) {
 		this.x = this.centreX + this.radius * Math.sin(this.theta);
 		this.y = this.centreY + this.radius * Math.cos(this.theta);
-		this.sequenceSprite.x = this.x;
-		this.sequenceSprite.y = this.y;
+		this.sequenceSprite.x = this.centreX - this.unicornSequence.gridX / 2 * this.unicornSequence.scaleX;
+		this.sequenceSprite.y = this.centreY - this.unicornSequence.gridY / 2 * this.unicornSequence.scaleY;
+		var dx = this.sequenceSprite.x + this.unicornSequence.gridX / 2 * this.unicornSequence.scaleX;
+		var dy = this.sequenceSprite.y + this.unicornSequence.gridY / 2 * this.unicornSequence.scaleY;
+		var _this__22;
+		var _this__21;
+		var _this__20;
+		var _this__12;
+		var _this__11;
+		var _this__10;
+		var _this__02;
+		var _this__01;
+		var _this__00;
+		var _this__221;
+		var _this__211;
+		var _this__201;
+		var _this__121;
+		var _this__111;
+		var _this__101;
+		var _this__021;
+		var _this__011;
+		var _this__001 = 1;
+		_this__101 = 0;
+		_this__201 = dx;
+		_this__011 = 0;
+		_this__111 = 1;
+		_this__211 = dy;
+		_this__021 = 0;
+		_this__121 = 0;
+		_this__221 = 1;
+		var m__22;
+		var m__21;
+		var m__20;
+		var m__12;
+		var m__11;
+		var m__10;
+		var m__02;
+		var m__01;
+		var m__00;
+		var alpha = -this.theta;
+		m__00 = Math.cos(alpha);
+		m__10 = -Math.sin(alpha);
+		m__20 = 0;
+		m__01 = Math.sin(alpha);
+		m__11 = Math.cos(alpha);
+		m__21 = 0;
+		m__02 = 0;
+		m__12 = 0;
+		m__22 = 1;
+		_this__00 = _this__001 * m__00 + _this__101 * m__01 + _this__201 * m__02;
+		_this__10 = _this__001 * m__10 + _this__101 * m__11 + _this__201 * m__12;
+		_this__20 = _this__001 * m__20 + _this__101 * m__21 + _this__201 * m__22;
+		_this__01 = _this__011 * m__00 + _this__111 * m__01 + _this__211 * m__02;
+		_this__11 = _this__011 * m__10 + _this__111 * m__11 + _this__211 * m__12;
+		_this__21 = _this__011 * m__20 + _this__111 * m__21 + _this__211 * m__22;
+		_this__02 = _this__021 * m__00 + _this__121 * m__01 + _this__221 * m__02;
+		_this__12 = _this__021 * m__10 + _this__121 * m__11 + _this__221 * m__12;
+		_this__22 = _this__021 * m__20 + _this__121 * m__21 + _this__221 * m__22;
+		var m__221;
+		var m__211;
+		var m__201;
+		var m__121;
+		var m__111;
+		var m__101;
+		var m__021;
+		var m__011;
+		var m__001 = 1;
+		m__101 = 0;
+		m__201 = -dx;
+		m__011 = 0;
+		m__111 = 1;
+		m__211 = -dy;
+		m__021 = 0;
+		m__121 = 0;
+		m__221 = 1;
+		var tmp = new kha_math_FastMatrix3(_this__00 * m__001 + _this__10 * m__011 + _this__20 * m__021,_this__00 * m__101 + _this__10 * m__111 + _this__20 * m__121,_this__00 * m__201 + _this__10 * m__211 + _this__20 * m__221,_this__01 * m__001 + _this__11 * m__011 + _this__21 * m__021,_this__01 * m__101 + _this__11 * m__111 + _this__21 * m__121,_this__01 * m__201 + _this__11 * m__211 + _this__21 * m__221,_this__02 * m__001 + _this__12 * m__011 + _this__22 * m__021,_this__02 * m__101 + _this__12 * m__111 + _this__22 * m__121,_this__02 * m__201 + _this__12 * m__211 + _this__22 * m__221);
+		this.sequenceSprite.matrix = tmp;
 		this.gridImage2.renderSequence(g,this.sequenceSprite);
 	}
-	,getXY: function(row,col) {
+	,getItem: function(row,col) {
 		var offset = row * col;
 		this.x = this.centreX + this.radius * Math.sin(this.theta + offset);
 		this.y = this.centreY + this.radius * Math.cos(this.theta + offset);
-		this.sequenceSprite.x = this.x;
-		this.sequenceSprite.y = this.y;
-		return { x : this.scaleX * row * this.gridX * 1.1 + this.x - 180, y : this.scaleY * col * this.gridY * 1.1 + this.y - 200};
-	}
-	,getAlpha: function(row,col) {
-		return 1.;
+		this.sequenceSprite.x = this.centreX - this.unicornSequence.gridX / 2 * this.unicornSequence.scaleX;
+		this.sequenceSprite.y = this.centreY - this.unicornSequence.gridY / 2 * this.unicornSequence.scaleY;
+		return { x : this.scaleX * row * this.gridX * 1.1 + this.x - 180 - this.gridX / 2, y : this.scaleY * col * this.gridY * 1.1 + this.y - 200 - this.gridY / 2, alpha : 1., transform : new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1)};
 	}
 	,rotatePositionXY: function(offset) {
 		this.x = this.centreX + this.radius * Math.sin(this.theta + offset);
 		this.y = this.centreY + this.radius * Math.cos(this.theta + offset);
-		this.sequenceSprite.x = this.x;
-		this.sequenceSprite.y = this.y;
+		this.sequenceSprite.x = this.centreX - this.unicornSequence.gridX / 2 * this.unicornSequence.scaleX;
+		this.sequenceSprite.y = this.centreY - this.unicornSequence.gridY / 2 * this.unicornSequence.scaleY;
 	}
 	,initInputs: function() {
 		if(kha_input_Mouse.get() != null) {
@@ -278,16 +427,16 @@ Main.prototype = {
 		}
 	}
 	,mouseDown: function(button,x,y) {
-		haxe_Log.trace("down",{ fileName : "Main.hx", lineNumber : 101, className : "Main", methodName : "mouseDown"});
+		haxe_Log.trace("down",{ fileName : "Main.hx", lineNumber : 98, className : "Main", methodName : "mouseDown"});
 	}
 	,mouseUp: function(button,x,y) {
-		haxe_Log.trace("up",{ fileName : "Main.hx", lineNumber : 105, className : "Main", methodName : "mouseUp"});
+		haxe_Log.trace("up",{ fileName : "Main.hx", lineNumber : 102, className : "Main", methodName : "mouseUp"});
 	}
 	,mouseMove: function(x,y,movementX,movementY) {
-		haxe_Log.trace("Move",{ fileName : "Main.hx", lineNumber : 109, className : "Main", methodName : "mouseMove"});
+		haxe_Log.trace("Move",{ fileName : "Main.hx", lineNumber : 106, className : "Main", methodName : "mouseMove"});
 	}
 	,mouseWheel: function(delta) {
-		haxe_Log.trace("Wheel",{ fileName : "Main.hx", lineNumber : 113, className : "Main", methodName : "mouseWheel"});
+		haxe_Log.trace("Wheel",{ fileName : "Main.hx", lineNumber : 110, className : "Main", methodName : "mouseWheel"});
 	}
 	,__class__: Main
 };
@@ -415,6 +564,8 @@ var gridSheet_GridSheet = function(gi) {
 	this.count = 0;
 	this.c = 0;
 	this.r = 0;
+	this.dy = 0.;
+	this.dx = 0.;
 	this.gridX = gi.gridX;
 	this.gridY = gi.gridY;
 	this.totalRows = gi.totalRows;
@@ -426,7 +577,9 @@ var gridSheet_GridSheet = function(gi) {
 $hxClasses["gridSheet.GridSheet"] = gridSheet_GridSheet;
 gridSheet_GridSheet.__name__ = true;
 gridSheet_GridSheet.prototype = {
-	gridX: null
+	dx: null
+	,dy: null
+	,gridX: null
 	,gridY: null
 	,scaleX: null
 	,scaleY: null
@@ -437,7 +590,13 @@ gridSheet_GridSheet.prototype = {
 	,count: null
 	,image: null
 	,totalCount: null
-	,renderGrid: function(g,pos) {
+	,calculateRows: function() {
+		return Math.round(this.image.get_width() / this.gridX);
+	}
+	,calculateCols: function() {
+		return Math.round(this.image.get_height() / this.gridY);
+	}
+	,renderGrid: function(g,gridItems) {
 		var p;
 		var alpha;
 		var _g1 = 0;
@@ -448,19 +607,55 @@ gridSheet_GridSheet.prototype = {
 			var _g2 = this.totalRows;
 			while(_g3 < _g2) {
 				var row = _g3++;
-				var p1 = pos.getXY(row,col);
-				g.set_opacity(pos.getAlpha(row,col));
-				g.drawScaledSubImage(this.image,row * this.gridX,col * this.gridY,this.gridX,this.gridY,p1.x,p1.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
+				var item = gridItems.getItem(row,col);
+				g.set_opacity(item.alpha);
+				var transformation = item.transform;
+				g.setTransformation(transformation);
+				var _this = g.transformations[g.transformations.length - 1];
+				_this._00 = transformation._00;
+				_this._10 = transformation._10;
+				_this._20 = transformation._20;
+				_this._01 = transformation._01;
+				_this._11 = transformation._11;
+				_this._21 = transformation._21;
+				_this._02 = transformation._02;
+				_this._12 = transformation._12;
+				_this._22 = transformation._22;
+				g.drawScaledSubImage(this.image,row * this.gridX + this.dx,col * this.gridY + this.dy,this.gridX,this.gridY,item.x,item.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
 			}
 		}
+		var transformation1 = new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1);
+		g.setTransformation(transformation1);
+		var _this1 = g.transformations[g.transformations.length - 1];
+		_this1._00 = transformation1._00;
+		_this1._10 = transformation1._10;
+		_this1._20 = transformation1._20;
+		_this1._01 = transformation1._01;
+		_this1._11 = transformation1._11;
+		_this1._21 = transformation1._21;
+		_this1._02 = transformation1._02;
+		_this1._12 = transformation1._12;
+		_this1._22 = transformation1._22;
 		g.set_opacity(1.);
 	}
-	,renderSequence: function(g,pos) {
+	,renderSequence: function(g,gridItems) {
 		var row = this.r;
 		var col = this.c;
-		var p = pos.getXY(row,col);
-		g.set_opacity(pos.getAlpha(row,col));
-		g.drawScaledSubImage(this.image,row * this.gridX,col * this.gridY,this.gridX,this.gridY,p.x,p.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
+		var item = gridItems.getItem(row,col);
+		g.set_opacity(item.alpha);
+		var transformation = item.transform;
+		g.setTransformation(transformation);
+		var _this = g.transformations[g.transformations.length - 1];
+		_this._00 = transformation._00;
+		_this._10 = transformation._10;
+		_this._20 = transformation._20;
+		_this._01 = transformation._01;
+		_this._11 = transformation._11;
+		_this._21 = transformation._21;
+		_this._02 = transformation._02;
+		_this._12 = transformation._12;
+		_this._22 = transformation._22;
+		g.drawScaledSubImage(this.image,row * this.gridX + this.dx,col * this.gridY + this.dy,this.gridX,this.gridY,item.x,item.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
 		if(this.count == this.totalCount) {
 			this.count = 0;
 			this.r++;
@@ -474,10 +669,22 @@ gridSheet_GridSheet.prototype = {
 		}
 		this.count++;
 	}
-	,renderFrame: function(g,pos,row,col) {
-		var p = pos.getXY(row,col);
-		g.set_opacity(pos.getAlpha(row,col));
-		g.drawScaledSubImage(this.image,row * this.gridX,col * this.gridY,this.gridX,this.gridY,p.x,p.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
+	,renderFrame: function(g,gridItems,row,col) {
+		var item = gridItems.getItem(row,col);
+		g.set_opacity(item.alpha);
+		var transformation = item.transform;
+		g.setTransformation(transformation);
+		var _this = g.transformations[g.transformations.length - 1];
+		_this._00 = transformation._00;
+		_this._10 = transformation._10;
+		_this._20 = transformation._20;
+		_this._01 = transformation._01;
+		_this._11 = transformation._11;
+		_this._21 = transformation._21;
+		_this._02 = transformation._02;
+		_this._12 = transformation._12;
+		_this._22 = transformation._22;
+		g.drawScaledSubImage(this.image,row * this.gridX + this.dx,col * this.gridY + this.dy,this.gridX,this.gridY,item.x,item.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
 	}
 	,advanceFrame: function() {
 		if(this.count == this.totalCount) {
@@ -493,21 +700,19 @@ gridSheet_GridSheet.prototype = {
 		}
 		this.count++;
 	}
-	,getXY: function(row,col) {
-		return { x : this.scaleX * row * this.gridX, y : this.scaleY * col * this.gridY};
-	}
-	,getAlpha: function(row,col) {
-		return 1.;
+	,getItem: function(row,col) {
+		return { x : this.scaleX * row * this.gridX, y : this.scaleY * col * this.gridY, alpha : 1., transform : new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1)};
 	}
 	,__class__: gridSheet_GridSheet
 };
-var gridSheet_SequenceSprite = function(x_,y_,alpha_) {
+var gridSheet_SequenceSprite = function(x_,y_,alpha_,matrix_) {
 	this.alpha = 0;
 	this.y = 0;
 	this.x = 0;
 	this.x = x_;
 	this.y = y_;
 	this.alpha = alpha_;
+	this.matrix = matrix_;
 };
 $hxClasses["gridSheet.SequenceSprite"] = gridSheet_SequenceSprite;
 gridSheet_SequenceSprite.__name__ = true;
@@ -515,11 +720,9 @@ gridSheet_SequenceSprite.prototype = {
 	x: null
 	,y: null
 	,alpha: null
-	,getXY: function(row,col) {
-		return { x : this.x, y : this.y};
-	}
-	,getAlpha: function(row,col) {
-		return this.alpha;
+	,matrix: null
+	,getItem: function(row,col) {
+		return { x : this.x, y : this.y, alpha : this.alpha, transform : this.matrix};
 	}
 	,__class__: gridSheet_SequenceSprite
 };
