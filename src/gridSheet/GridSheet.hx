@@ -1,6 +1,7 @@
 package gridSheet;
 import kha.Image;
 import kha.graphics2.Graphics;
+import kha.math.FastMatrix3;
 typedef GridSheetDef = {
     var gridX:      Float;
     var gridY:      Float;
@@ -10,11 +11,20 @@ typedef GridSheetDef = {
     var scaleY:     Float;
     var image:      Image;
 }
-typedef Position = {
-    function getXY( row: Int, col: Int ): { x: Float, y: Float };
-    function getAlpha( row: Int, col: Int ): Float;
+typedef GridItemDef = {
+    var x: Float;
+    var y: Float;
+    var alpha: Float;
+    var transform: FastMatrix3;
 }
+typedef GridItems = {
+    function getItem( row: Float, col: Float ): GridItemDef;
+}
+// SpriteSheet
 class GridSheet{
+    // used to allow offset of rectangles
+    public var dx = 0.; 
+    public var dy = 0.;
     var gridX:      Float;
     var gridY:      Float;
     var scaleX:     Float;
@@ -25,7 +35,14 @@ class GridSheet{
     var c:          Int = 0;
     var count:      Int = 0;
     var image:      Image;
-    public var totalCount: Float = 8;
+    public var totalCount: Float = 8; // relates to render speed.
+    public function calculateRows(){
+        return Math.round( image.width/gridX );
+    }
+    public function calculateCols(){
+        return Math.round( image.height/gridY );
+    }
+    
     public function new( gi: GridSheetDef ){
         gridX       = gi.gridX;
         gridY       = gi.gridY;
@@ -35,28 +52,30 @@ class GridSheet{
         scaleY      = gi.scaleY;
         image       = gi.image;
     }
-    public function renderGrid( g: Graphics, pos: Position ){
+    public function renderGrid( g: Graphics, gridItems: GridItems ){
         var p: { x: Float, y: Float };
         var alpha: Float;
         for( col in 0...totalCols ){
             for( row in 0...totalRows ){
-                renderFrame( g, pos, row, col );
+                renderFrame( g, gridItems, row, col );
             }
         }
         // assume to reset it to 1.
+        g.transformation = FastMatrix3.identity();
         g.opacity = 1.;
     }
-    public function renderSequence( g: Graphics, pos: Position ){
-        renderFrame( g, pos, r, c );
+    public function renderSequence( g: Graphics, gridItems: GridItems ){
+        renderFrame( g, gridItems, r, c );
         advanceFrame();
     }
-    inline function renderFrame( g: Graphics, pos: Position, row: Int, col: Int ){
-        var p: { x: Float, y: Float } = pos.getXY( row, col );
-        g.opacity = pos.getAlpha( row, col );
+    inline function renderFrame( g: Graphics, gridItems: GridItems, row: Int, col: Int ){
+        var item = gridItems.getItem( row, col );
+        g.opacity = item.alpha;
+        g.transformation = item.transform;
         g.drawScaledSubImage( image
-                            , row*gridX, col*gridY
+                            , row*gridX + dx, col*gridY + dy
                             , gridX, gridY
-                            , p.x, p.y
+                            , item.x, item.y
                             , gridX * scaleX, gridY * scaleY );
     }
     inline function advanceFrame(){
@@ -73,27 +92,23 @@ class GridSheet{
         }
         count++;
     }
-    // defaults you can pass GridSheet as Position
-    inline function getXY( row: Int, col: Int ):{x: Float, y: Float }{
-        return { x: scaleX*row*gridX, y: scaleY*col*gridY };
-    }
-    inline function getAlpha( row: Int, col: Int ): Float {
-        return 1.;
+    // defaults you can pass GridSheet as GridItems
+    inline function getItem( row: Int, col: Int ): GridItemDef {
+        return { x: scaleX*row*gridX, y: scaleY*col*gridY, alpha: 1., transform: FastMatrix3.identity() };
     }
 }
 class SequenceSprite{
     public var x: Float = 0;
     public var y: Float = 0;
     public var alpha: Float = 0;
-    public function new( x_: Float, y_: Float, alpha_: Float ){
+    public var matrix: FastMatrix3;
+    public function new( x_: Float, y_: Float, alpha_: Float, matrix_: FastMatrix3 ){
         x = x_;
         y = y_;
         alpha = alpha_;
+        matrix = matrix_;
     }
-    inline function getXY( row: Int, col: Int ):{x: Float, y: Float }{
-        return { x: x, y: y };
-    }
-    inline function getAlpha( row: Int, col: Int ): Float {
-        return alpha;
+    inline function getItem( row: Int, col: Int ): GridItemDef {
+        return { x: x, y: y, alpha: alpha, transform: matrix };
     }
 }
