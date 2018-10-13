@@ -9,6 +9,7 @@ import kha.input.Keyboard;
 import kha.input.Mouse;
 import kha.input.KeyCode;
 import gridSheet.GridSheet;
+import kha.math.FastMatrix3;
 class Main {
     var gridX = 50.;
     var gridY = 50.;
@@ -32,6 +33,7 @@ class Main {
     var gridImage2: GridSheet;
     var unicornSequence: GridSheetDef;
     var sequenceSprite: SequenceSprite;
+    var matrix = FastMatrix3.identity();
     public static 
     function main() {
         System.init( {  title: "drawSubImage Test"
@@ -50,7 +52,7 @@ class Main {
                           , totalRows: 8, totalCols: 1
                           , scaleX: 0.7, scaleY: 0.7
                           , image: Assets.images.unicorn };
-        sequenceSprite  = new SequenceSprite( 100, 100, 1. );
+        sequenceSprite  = new SequenceSprite( 100, 100, 1., FastMatrix3.identity() );
         gridImage       = new GridSheet( cast unicornSequence );
         gridImage2      = new GridSheet( cast unicornSequence );
         startRendering();
@@ -67,31 +69,26 @@ class Main {
         g.end();
     }
     inline function grids( g: Graphics ){
-        
         rotatePositionXY( 0 );
-        gridImage.renderGrid( g, cast gridImage );   
-        
+        gridImage.renderGrid( g, cast this );   
         theta += rotationSpeed;
     }
     inline function animate( g: Graphics ){
-        
         rotatePositionXY( 0 );
+        var dx = ( sequenceSprite.x + unicornSequence.gridX/2 * unicornSequence.scaleX );
+        var dy = ( sequenceSprite.y + unicornSequence.gridY/2 * unicornSequence.scaleY );
+        sequenceSprite.matrix = FastMatrix3.translation( dx, dy ).multmat( FastMatrix3.rotation( -theta ) ).multmat( FastMatrix3.translation( -dx, -dy ) );
         gridImage2.renderSequence( g, cast sequenceSprite );  
-        
     } 
-    
-    inline function getXY( row: Int, col: Int ):{x: Float, y: Float }{
+    inline function getItem( row: Int, col: Int ): GridItemDef {
         rotatePositionXY( row*col );
-        return { x: scaleX*row*gridX*1.1 + x - 180, y: scaleY*col*gridY*1.1 + y - 200 };
-    }
-    inline function getAlpha( row: Int, col: Int ): Float {
-        return 1.;
+        return { x: scaleX*row*gridX*1.1 + x - 180 - gridX/2, y: scaleY*col*gridY*1.1 + y - 200 - gridY/2, alpha: 1., transform: FastMatrix3.identity() };
     }
     inline function rotatePositionXY( offset: Float ){
         x = centreX + radius*Math.sin( theta + offset );
         y = centreY + radius*Math.cos( theta + offset );
-        sequenceSprite.x = x;
-        sequenceSprite.y = y; 
+        sequenceSprite.x = centreX - unicornSequence.gridX/2 * unicornSequence.scaleX;
+        sequenceSprite.y = centreY - unicornSequence.gridY/2 * unicornSequence.scaleY; 
     }
     function initInputs() {
         if (Mouse.get() != null) Mouse.get().notify( mouseDown, mouseUp, mouseMove, mouseWheel );
