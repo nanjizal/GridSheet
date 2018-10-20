@@ -2,6 +2,7 @@ package;
 import kha.Framebuffer;
 import kha.System;
 import kha.Image;
+import kha.Color;
 import kha.Assets;
 import kha.graphics2.Graphics;
 import kha.graphics4.DepthStencilFormat;
@@ -31,7 +32,9 @@ class Main {
     var image: Image;
     var gridImage: GridSheet;
     var gridImage2: GridSheet;
+    var gridImage3: GridSheet;
     var unicornSequence: GridSheetDef;
+    var colorGrid: GridSheetDef;
     var sequenceSprite: SequenceSprite;
     var matrix = FastMatrix3.identity();
     public static 
@@ -49,12 +52,17 @@ class Main {
         trace( 'loadAll' );
         image           = Assets.images.colorGrid;
         unicornSequence = { gridX: 132, gridY: 80
-                          , totalRows: 8, totalCols: 1
+                          , totalRows: 1, totalCols: 8
                           , scaleX: 0.7, scaleY: 0.7
                           , image: Assets.images.unicorn };
-        sequenceSprite  = new SequenceSprite( 100, 100, 1., FastMatrix3.identity() );
+        colorGrid       = { gridX: 50, gridY: 50
+                          , totalRows: 10, totalCols: 7
+                          , scaleX: 0.7, scaleY: 0.7 
+                          , image: Assets.images.colorGrid };                 
+        sequenceSprite  = new SequenceSprite( 100, 100, Color.White, 1., FastMatrix3.identity(), 1 );
         gridImage       = new GridSheet( cast unicornSequence );
         gridImage2      = new GridSheet( cast unicornSequence );
+        gridImage3      = new GridSheet( cast colorGrid );
         startRendering();
         initInputs();
     }
@@ -70,7 +78,8 @@ class Main {
     }
     inline function grids( g: Graphics ){
         rotatePositionXY( 0 );
-        gridImage.renderGrid( g, cast this );   
+        gridImage3.renderGrid( g, cast this ); 
+        gridImage.renderGrid( g, cast this );  
         theta += rotationSpeed;
     }
     inline function animate( g: Graphics ){
@@ -80,9 +89,11 @@ class Main {
         sequenceSprite.matrix = FastMatrix3.translation( dx, dy ).multmat( FastMatrix3.rotation( -theta ) ).multmat( FastMatrix3.translation( -dx, -dy ) );
         gridImage2.renderSequence( g, cast sequenceSprite );  
     } 
-    inline function getItem( row: Int, col: Int ): GridItemDef {
+    inline function getItem( col: Int, row: Int ): GridItemDef {
         rotatePositionXY( row*col );
-        return { x: scaleX*row*gridX*1.1 + x - 180 - gridX/2, y: scaleY*col*gridY*1.1 + y - 200 - gridY/2, alpha: 1., transform: FastMatrix3.identity() };
+        return { x: Math.round( scaleX*col*gridX*1.1 + x - 180 - gridX/2 ) + 60
+               , y: Math.round( scaleY*row*gridY*1.1 + y - 200 - gridY/2 ) + 60
+               , color: Color.White, alpha: 1., transform: FastMatrix3.identity(), depth: 1 };
     }
     inline function rotatePositionXY( offset: Float ){
         x = centreX + radius*Math.sin( theta + offset );

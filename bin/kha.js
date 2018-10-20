@@ -207,16 +207,20 @@ Main.prototype = {
 	,image: null
 	,gridImage: null
 	,gridImage2: null
+	,gridImage3: null
 	,unicornSequence: null
+	,colorGrid: null
 	,sequenceSprite: null
 	,matrix: null
 	,loadAll: function() {
-		haxe_Log.trace("loadAll",{ fileName : "Main.hx", lineNumber : 49, className : "Main", methodName : "loadAll"});
+		haxe_Log.trace("loadAll",{ fileName : "Main.hx", lineNumber : 52, className : "Main", methodName : "loadAll"});
 		this.image = kha_Assets.images.colorGrid;
-		this.unicornSequence = { gridX : 132, gridY : 80, totalRows : 8, totalCols : 1, scaleX : 0.7, scaleY : 0.7, image : kha_Assets.images.unicorn};
-		this.sequenceSprite = new gridSheet_SequenceSprite(100,100,1.,new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1));
+		this.unicornSequence = { gridX : 132, gridY : 80, totalRows : 1, totalCols : 8, scaleX : 0.7, scaleY : 0.7, image : kha_Assets.images.unicorn};
+		this.colorGrid = { gridX : 50, gridY : 50, totalRows : 10, totalCols : 7, scaleX : 0.7, scaleY : 0.7, image : kha_Assets.images.colorGrid};
+		this.sequenceSprite = new gridSheet_SequenceSprite(100,100,-1,1.,new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1),1);
 		this.gridImage = new gridSheet_GridSheet(this.unicornSequence);
 		this.gridImage2 = new gridSheet_GridSheet(this.unicornSequence);
+		this.gridImage3 = new gridSheet_GridSheet(this.colorGrid);
 		this.startRendering();
 		this.initInputs();
 	}
@@ -233,6 +237,7 @@ Main.prototype = {
 		this.y = this.centreY + this.radius * Math.cos(this.theta);
 		this.sequenceSprite.x = this.centreX - this.unicornSequence.gridX / 2 * this.unicornSequence.scaleX;
 		this.sequenceSprite.y = this.centreY - this.unicornSequence.gridY / 2 * this.unicornSequence.scaleY;
+		this.gridImage3.renderGrid(g,this);
 		this.gridImage.renderGrid(g,this);
 		this.theta += this.rotationSpeed;
 		this.x = this.centreX + this.radius * Math.sin(this.theta);
@@ -322,6 +327,7 @@ Main.prototype = {
 		this.y = this.centreY + this.radius * Math.cos(this.theta);
 		this.sequenceSprite.x = this.centreX - this.unicornSequence.gridX / 2 * this.unicornSequence.scaleX;
 		this.sequenceSprite.y = this.centreY - this.unicornSequence.gridY / 2 * this.unicornSequence.scaleY;
+		this.gridImage3.renderGrid(g,this);
 		this.gridImage.renderGrid(g,this);
 		this.theta += this.rotationSpeed;
 	}
@@ -407,13 +413,13 @@ Main.prototype = {
 		this.sequenceSprite.matrix = tmp;
 		this.gridImage2.renderSequence(g,this.sequenceSprite);
 	}
-	,getItem: function(row,col) {
+	,getItem: function(col,row) {
 		var offset = row * col;
 		this.x = this.centreX + this.radius * Math.sin(this.theta + offset);
 		this.y = this.centreY + this.radius * Math.cos(this.theta + offset);
 		this.sequenceSprite.x = this.centreX - this.unicornSequence.gridX / 2 * this.unicornSequence.scaleX;
 		this.sequenceSprite.y = this.centreY - this.unicornSequence.gridY / 2 * this.unicornSequence.scaleY;
-		return { x : this.scaleX * row * this.gridX * 1.1 + this.x - 180 - this.gridX / 2, y : this.scaleY * col * this.gridY * 1.1 + this.y - 200 - this.gridY / 2, alpha : 1., transform : new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1)};
+		return { x : Math.round(this.scaleX * col * this.gridX * 1.1 + this.x - 180 - this.gridX / 2) + 60, y : Math.round(this.scaleY * row * this.gridY * 1.1 + this.y - 200 - this.gridY / 2) + 60, color : -1, alpha : 1., transform : new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1), depth : 1};
 	}
 	,rotatePositionXY: function(offset) {
 		this.x = this.centreX + this.radius * Math.sin(this.theta + offset);
@@ -427,16 +433,16 @@ Main.prototype = {
 		}
 	}
 	,mouseDown: function(button,x,y) {
-		haxe_Log.trace("down",{ fileName : "Main.hx", lineNumber : 98, className : "Main", methodName : "mouseDown"});
+		haxe_Log.trace("down",{ fileName : "Main.hx", lineNumber : 109, className : "Main", methodName : "mouseDown"});
 	}
 	,mouseUp: function(button,x,y) {
-		haxe_Log.trace("up",{ fileName : "Main.hx", lineNumber : 102, className : "Main", methodName : "mouseUp"});
+		haxe_Log.trace("up",{ fileName : "Main.hx", lineNumber : 113, className : "Main", methodName : "mouseUp"});
 	}
 	,mouseMove: function(x,y,movementX,movementY) {
-		haxe_Log.trace("Move",{ fileName : "Main.hx", lineNumber : 106, className : "Main", methodName : "mouseMove"});
+		haxe_Log.trace("Move",{ fileName : "Main.hx", lineNumber : 117, className : "Main", methodName : "mouseMove"});
 	}
 	,mouseWheel: function(delta) {
-		haxe_Log.trace("Wheel",{ fileName : "Main.hx", lineNumber : 110, className : "Main", methodName : "mouseWheel"});
+		haxe_Log.trace("Wheel",{ fileName : "Main.hx", lineNumber : 121, className : "Main", methodName : "mouseWheel"});
 	}
 	,__class__: Main
 };
@@ -596,34 +602,70 @@ gridSheet_GridSheet.prototype = {
 	,calculateCols: function() {
 		return Math.round(this.image.get_height() / this.gridY);
 	}
-	,renderGrid: function(g,gridItems) {
+	,renderGrid: function(g,gridItems,outline) {
+		if(outline == null) {
+			outline = false;
+		}
 		var p;
 		var alpha;
+		var item;
+		var temp = [];
+		var count = 0;
 		var _g1 = 0;
-		var _g = this.totalCols;
+		var _g = this.totalRows;
 		while(_g1 < _g) {
-			var col = _g1++;
+			var row = _g1++;
 			var _g3 = 0;
-			var _g2 = this.totalRows;
+			var _g2 = this.totalCols;
 			while(_g3 < _g2) {
-				var row = _g3++;
-				var item = gridItems.getItem(row,col);
-				g.set_opacity(item.alpha);
-				var transformation = item.transform;
-				g.setTransformation(transformation);
-				var _this = g.transformations[g.transformations.length - 1];
-				_this._00 = transformation._00;
-				_this._10 = transformation._10;
-				_this._20 = transformation._20;
-				_this._01 = transformation._01;
-				_this._11 = transformation._11;
-				_this._21 = transformation._21;
-				_this._02 = transformation._02;
-				_this._12 = transformation._12;
-				_this._22 = transformation._22;
-				g.drawScaledSubImage(this.image,row * this.gridX + this.dx,col * this.gridY + this.dy,this.gridX,this.gridY,item.x,item.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
+				var col = _g3++;
+				item = gridItems.getItem(col,row);
+				temp[count++] = { item : item, col : col, row : row};
 			}
 		}
+		haxe_ds_ArraySort.sort(temp,function(a,b) {
+			var c = a.item.depth;
+			var d = b.item.depth;
+			if(c < d) {
+				return -1;
+			} else if(c > d) {
+				return 1;
+			} else {
+				return 0;
+			}
+		});
+		var obj;
+		var _g11 = 0;
+		var _g4 = temp.length;
+		while(_g11 < _g4) {
+			var i = _g11++;
+			obj = temp[i];
+			var item1 = obj.item;
+			var col1 = obj.col;
+			var row1 = obj.row;
+			g.set_opacity(item1.alpha);
+			var transformation = item1.transform;
+			g.setTransformation(transformation);
+			var _this = g.transformations[g.transformations.length - 1];
+			_this._00 = transformation._00;
+			_this._10 = transformation._10;
+			_this._20 = transformation._20;
+			_this._01 = transformation._01;
+			_this._11 = transformation._11;
+			_this._21 = transformation._21;
+			_this._02 = transformation._02;
+			_this._12 = transformation._12;
+			_this._22 = transformation._22;
+			if(outline) {
+				g.set_color(-65536);
+				g.drawRect(item1.x,item1.y,this.gridX,this.gridY,1);
+				g.set_color(item1.color);
+			}
+			g.set_color(item1.color);
+			g.drawScaledSubImage(this.image,col1 * this.gridX + this.dx,row1 * this.gridY + this.dy,this.gridX,this.gridY,item1.x,item1.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
+			g.set_color(-1);
+		}
+		g.set_color(-1);
 		var transformation1 = new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1);
 		g.setTransformation(transformation1);
 		var _this1 = g.transformations[g.transformations.length - 1];
@@ -638,10 +680,39 @@ gridSheet_GridSheet.prototype = {
 		_this1._22 = transformation1._22;
 		g.set_opacity(1.);
 	}
+	,resetGraphics: function(g) {
+		g.set_color(-1);
+		var transformation = new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1);
+		g.setTransformation(transformation);
+		var _this = g.transformations[g.transformations.length - 1];
+		_this._00 = transformation._00;
+		_this._10 = transformation._10;
+		_this._20 = transformation._20;
+		_this._01 = transformation._01;
+		_this._11 = transformation._11;
+		_this._21 = transformation._21;
+		_this._02 = transformation._02;
+		_this._12 = transformation._12;
+		_this._22 = transformation._22;
+		g.set_opacity(1.);
+	}
+	,depthSort: function(arr) {
+		haxe_ds_ArraySort.sort(arr,function(a,b) {
+			var c = a.item.depth;
+			var d = b.item.depth;
+			if(c < d) {
+				return -1;
+			} else if(c > d) {
+				return 1;
+			} else {
+				return 0;
+			}
+		});
+	}
 	,renderSequence: function(g,gridItems) {
-		var row = this.r;
 		var col = this.c;
-		var item = gridItems.getItem(row,col);
+		var row = this.r;
+		var item = gridItems.getItem(col,row);
 		g.set_opacity(item.alpha);
 		var transformation = item.transform;
 		g.setTransformation(transformation);
@@ -655,22 +726,26 @@ gridSheet_GridSheet.prototype = {
 		_this._02 = transformation._02;
 		_this._12 = transformation._12;
 		_this._22 = transformation._22;
-		g.drawScaledSubImage(this.image,row * this.gridX + this.dx,col * this.gridY + this.dy,this.gridX,this.gridY,item.x,item.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
+		g.set_color(item.color);
+		g.drawScaledSubImage(this.image,col * this.gridX + this.dx,row * this.gridY + this.dy,this.gridX,this.gridY,item.x,item.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
+		g.set_color(-1);
 		if(this.count == this.totalCount) {
 			this.count = 0;
-			this.r++;
-			if(this.r > this.totalRows - 1) {
-				this.r = 0;
-				this.c++;
-				if(this.c > this.totalCols - 1) {
-					this.c = 0;
+			this.c++;
+			if(this.c > this.totalCols - 1) {
+				this.c = 0;
+				this.r++;
+				if(this.r > this.totalRows - 1) {
+					this.r = 0;
 				}
 			}
 		}
 		this.count++;
 	}
-	,renderFrame: function(g,gridItems,row,col) {
-		var item = gridItems.getItem(row,col);
+	,renderItem: function(g,item,col,row,outline) {
+		if(outline == null) {
+			outline = false;
+		}
 		g.set_opacity(item.alpha);
 		var transformation = item.transform;
 		g.setTransformation(transformation);
@@ -684,45 +759,85 @@ gridSheet_GridSheet.prototype = {
 		_this._02 = transformation._02;
 		_this._12 = transformation._12;
 		_this._22 = transformation._22;
-		g.drawScaledSubImage(this.image,row * this.gridX + this.dx,col * this.gridY + this.dy,this.gridX,this.gridY,item.x,item.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
+		if(outline) {
+			g.set_color(-65536);
+			g.drawRect(item.x,item.y,this.gridX,this.gridY,1);
+			g.set_color(item.color);
+		}
+		g.set_color(item.color);
+		g.drawScaledSubImage(this.image,col * this.gridX + this.dx,row * this.gridY + this.dy,this.gridX,this.gridY,item.x,item.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
+		g.set_color(-1);
+	}
+	,renderFrame: function(g,gridItems,col,row,outline) {
+		if(outline == null) {
+			outline = false;
+		}
+		var item = gridItems.getItem(col,row);
+		g.set_opacity(item.alpha);
+		var transformation = item.transform;
+		g.setTransformation(transformation);
+		var _this = g.transformations[g.transformations.length - 1];
+		_this._00 = transformation._00;
+		_this._10 = transformation._10;
+		_this._20 = transformation._20;
+		_this._01 = transformation._01;
+		_this._11 = transformation._11;
+		_this._21 = transformation._21;
+		_this._02 = transformation._02;
+		_this._12 = transformation._12;
+		_this._22 = transformation._22;
+		if(outline) {
+			g.set_color(-65536);
+			g.drawRect(item.x,item.y,this.gridX,this.gridY,1);
+			g.set_color(item.color);
+		}
+		g.set_color(item.color);
+		g.drawScaledSubImage(this.image,col * this.gridX + this.dx,row * this.gridY + this.dy,this.gridX,this.gridY,item.x,item.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
+		g.set_color(-1);
 	}
 	,advanceFrame: function() {
 		if(this.count == this.totalCount) {
 			this.count = 0;
-			this.r++;
-			if(this.r > this.totalRows - 1) {
-				this.r = 0;
-				this.c++;
-				if(this.c > this.totalCols - 1) {
-					this.c = 0;
+			this.c++;
+			if(this.c > this.totalCols - 1) {
+				this.c = 0;
+				this.r++;
+				if(this.r > this.totalRows - 1) {
+					this.r = 0;
 				}
 			}
 		}
 		this.count++;
 	}
-	,getItem: function(row,col) {
-		return { x : this.scaleX * row * this.gridX, y : this.scaleY * col * this.gridY, alpha : 1., transform : new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1)};
+	,getItem: function(col,row) {
+		return { x : this.scaleX * col * this.gridX, y : this.scaleY * row * this.gridY, color : -1, alpha : 1., transform : new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1), depth : 0};
 	}
 	,__class__: gridSheet_GridSheet
 };
-var gridSheet_SequenceSprite = function(x_,y_,alpha_,matrix_) {
+var gridSheet_SequenceSprite = function(x_,y_,color_,alpha_,matrix_,depth_) {
+	this.depth = 0;
 	this.alpha = 0;
+	this.color = -1;
 	this.y = 0;
 	this.x = 0;
 	this.x = x_;
 	this.y = y_;
+	this.color = color_;
 	this.alpha = alpha_;
 	this.matrix = matrix_;
+	this.depth = depth_;
 };
 $hxClasses["gridSheet.SequenceSprite"] = gridSheet_SequenceSprite;
 gridSheet_SequenceSprite.__name__ = true;
 gridSheet_SequenceSprite.prototype = {
 	x: null
 	,y: null
+	,color: null
 	,alpha: null
 	,matrix: null
-	,getItem: function(row,col) {
-		return { x : this.x, y : this.y, alpha : this.alpha, transform : this.matrix};
+	,depth: null
+	,getItem: function(col,row) {
+		return { x : this.x, y : this.y, color : this.color, alpha : this.alpha, transform : this.matrix, depth : this.depth};
 	}
 	,__class__: gridSheet_SequenceSprite
 };
@@ -1306,6 +1421,137 @@ haxe_crypto_BaseCode.prototype = {
 		return out;
 	}
 	,__class__: haxe_crypto_BaseCode
+};
+var haxe_ds_ArraySort = function() { };
+$hxClasses["haxe.ds.ArraySort"] = haxe_ds_ArraySort;
+haxe_ds_ArraySort.__name__ = true;
+haxe_ds_ArraySort.sort = function(a,cmp) {
+	haxe_ds_ArraySort.rec(a,cmp,0,a.length);
+};
+haxe_ds_ArraySort.rec = function(a,cmp,from,to) {
+	var middle = from + to >> 1;
+	if(to - from < 12) {
+		if(to <= from) {
+			return;
+		}
+		var _g1 = from + 1;
+		var _g = to;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var j = i;
+			while(j > from) {
+				if(cmp(a[j],a[j - 1]) < 0) {
+					haxe_ds_ArraySort.swap(a,j - 1,j);
+				} else {
+					break;
+				}
+				--j;
+			}
+		}
+		return;
+	}
+	haxe_ds_ArraySort.rec(a,cmp,from,middle);
+	haxe_ds_ArraySort.rec(a,cmp,middle,to);
+	haxe_ds_ArraySort.doMerge(a,cmp,from,middle,to,middle - from,to - middle);
+};
+haxe_ds_ArraySort.doMerge = function(a,cmp,from,pivot,to,len1,len2) {
+	var first_cut;
+	var second_cut;
+	var len11;
+	var len22;
+	var new_mid;
+	if(len1 == 0 || len2 == 0) {
+		return;
+	}
+	if(len1 + len2 == 2) {
+		if(cmp(a[pivot],a[from]) < 0) {
+			haxe_ds_ArraySort.swap(a,pivot,from);
+		}
+		return;
+	}
+	if(len1 > len2) {
+		len11 = len1 >> 1;
+		first_cut = from + len11;
+		second_cut = haxe_ds_ArraySort.lower(a,cmp,pivot,to,first_cut);
+		len22 = second_cut - pivot;
+	} else {
+		len22 = len2 >> 1;
+		second_cut = pivot + len22;
+		first_cut = haxe_ds_ArraySort.upper(a,cmp,from,pivot,second_cut);
+		len11 = first_cut - from;
+	}
+	haxe_ds_ArraySort.rotate(a,cmp,first_cut,pivot,second_cut);
+	new_mid = first_cut + len22;
+	haxe_ds_ArraySort.doMerge(a,cmp,from,first_cut,new_mid,len11,len22);
+	haxe_ds_ArraySort.doMerge(a,cmp,new_mid,second_cut,to,len1 - len11,len2 - len22);
+};
+haxe_ds_ArraySort.rotate = function(a,cmp,from,mid,to) {
+	var n;
+	if(from == mid || mid == to) {
+		return;
+	}
+	n = haxe_ds_ArraySort.gcd(to - from,mid - from);
+	while(n-- != 0) {
+		var val = a[from + n];
+		var shift = mid - from;
+		var p1 = from + n;
+		var p2 = from + n + shift;
+		while(p2 != from + n) {
+			a[p1] = a[p2];
+			p1 = p2;
+			if(to - p2 > shift) {
+				p2 += shift;
+			} else {
+				p2 = from + (shift - (to - p2));
+			}
+		}
+		a[p1] = val;
+	}
+};
+haxe_ds_ArraySort.gcd = function(m,n) {
+	while(n != 0) {
+		var t = m % n;
+		m = n;
+		n = t;
+	}
+	return m;
+};
+haxe_ds_ArraySort.upper = function(a,cmp,from,to,val) {
+	var len = to - from;
+	var half;
+	var mid;
+	while(len > 0) {
+		half = len >> 1;
+		mid = from + half;
+		if(cmp(a[val],a[mid]) < 0) {
+			len = half;
+		} else {
+			from = mid + 1;
+			len = len - half - 1;
+		}
+	}
+	return from;
+};
+haxe_ds_ArraySort.lower = function(a,cmp,from,to,val) {
+	var len = to - from;
+	var half;
+	var mid;
+	while(len > 0) {
+		half = len >> 1;
+		mid = from + half;
+		if(cmp(a[mid],a[val]) < 0) {
+			from = mid + 1;
+			len = len - half - 1;
+		} else {
+			len = half;
+		}
+	}
+	return from;
+};
+haxe_ds_ArraySort.swap = function(a,i,j) {
+	var tmp = a[i];
+	a[i] = a[j];
+	a[j] = tmp;
 };
 var haxe_ds_IntMap = function() {
 	this.h = { };
@@ -4156,20 +4402,20 @@ kha_Shaders.init = function() {
 	var _g1 = 0;
 	while(_g1 < 3) {
 		var i1 = _g1++;
-		var data1 = Reflect.field(kha_Shaders,"painter_colored_vertData" + i1);
+		var data1 = Reflect.field(kha_Shaders,"painter_image_fragData" + i1);
 		var bytes1 = haxe_Unserializer.run(data1);
 		blobs1.push(kha_internal_BytesBlob.fromBytes(bytes1));
 	}
-	kha_Shaders.painter_colored_vert = new kha_graphics4_VertexShader(blobs1,["painter-colored.vert.essl","painter-colored-relaxed.vert.essl","painter-colored-webgl2.vert.essl"]);
+	kha_Shaders.painter_image_frag = new kha_graphics4_FragmentShader(blobs1,["painter-image.frag.essl","painter-image-relaxed.frag.essl","painter-image-webgl2.frag.essl"]);
 	var blobs2 = [];
 	var _g2 = 0;
 	while(_g2 < 3) {
 		var i2 = _g2++;
-		var data2 = Reflect.field(kha_Shaders,"painter_image_fragData" + i2);
+		var data2 = Reflect.field(kha_Shaders,"painter_colored_vertData" + i2);
 		var bytes2 = haxe_Unserializer.run(data2);
 		blobs2.push(kha_internal_BytesBlob.fromBytes(bytes2));
 	}
-	kha_Shaders.painter_image_frag = new kha_graphics4_FragmentShader(blobs2,["painter-image.frag.essl","painter-image-relaxed.frag.essl","painter-image-webgl2.frag.essl"]);
+	kha_Shaders.painter_colored_vert = new kha_graphics4_VertexShader(blobs2,["painter-colored.vert.essl","painter-colored-relaxed.vert.essl","painter-colored-webgl2.vert.essl"]);
 	var blobs3 = [];
 	var _g3 = 0;
 	while(_g3 < 3) {
@@ -23728,12 +23974,12 @@ kha_Scheduler.startTime = 0;
 kha_Shaders.painter_colored_fragData0 = "s198:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdmFyeWluZyBoaWdocCB2ZWM0IGZyYWdtZW50Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9GcmFnRGF0YVswXSA9IGZyYWdtZW50Q29sb3I7Cn0KCg";
 kha_Shaders.painter_colored_fragData1 = "s192:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX0ZyYWdEYXRhWzBdID0gZnJhZ21lbnRDb2xvcjsKfQoK";
 kha_Shaders.painter_colored_fragData2 = "s210:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7CgpvdXQgdmVjNCBGcmFnQ29sb3I7CmluIHZlYzQgZnJhZ21lbnRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIEZyYWdDb2xvciA9IGZyYWdtZW50Q29sb3I7Cn0KCg";
-kha_Shaders.painter_colored_vertData0 = "s331:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIHZlYzQgdmVydGV4Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IHByb2plY3Rpb25NYXRyaXggKiB2ZWM0KHZlcnRleFBvc2l0aW9uLCAxLjApOwogICAgZnJhZ21lbnRDb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
-kha_Shaders.painter_colored_vertData1 = "s374:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
-kha_Shaders.painter_colored_vertData2 = "s354:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWM0IGZyYWdtZW50Q29sb3I7CmluIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
 kha_Shaders.painter_image_fragData0 = "s471:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgdGV4OwoKdmFyeWluZyBoaWdocCB2ZWMyIHRleENvb3JkOwp2YXJ5aW5nIGhpZ2hwIHZlYzQgY29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCB2ZWM0IHRleGNvbG9yID0gdGV4dHVyZTJEKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICBoaWdocCB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBnbF9GcmFnRGF0YVswXSA9IHRleGNvbG9yOwp9Cgo";
 kha_Shaders.painter_image_fragData1 = "s444:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCnZhcnlpbmcgdmVjMiB0ZXhDb29yZDsKdmFyeWluZyB2ZWM0IGNvbG9yOwoKdm9pZCBtYWluKCkKewogICAgdmVjNCB0ZXhjb2xvciA9IHRleHR1cmUyRCh0ZXgsIHRleENvb3JkKSAqIGNvbG9yOwogICAgdmVjMyBfMzIgPSB0ZXhjb2xvci54eXogKiBjb2xvci53OwogICAgdGV4Y29sb3IgPSB2ZWM0KF8zMi54LCBfMzIueSwgXzMyLnosIHRleGNvbG9yLncpOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSB0ZXhjb2xvcjsKfQoK";
 kha_Shaders.painter_image_fragData2 = "s452:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCmluIHZlYzIgdGV4Q29vcmQ7CmluIHZlYzQgY29sb3I7Cm91dCB2ZWM0IEZyYWdDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIHZlYzQgdGV4Y29sb3IgPSB0ZXh0dXJlKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBGcmFnQ29sb3IgPSB0ZXhjb2xvcjsKfQoK";
+kha_Shaders.painter_colored_vertData0 = "s331:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIHZlYzQgdmVydGV4Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IHByb2plY3Rpb25NYXRyaXggKiB2ZWM0KHZlcnRleFBvc2l0aW9uLCAxLjApOwogICAgZnJhZ21lbnRDb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
+kha_Shaders.painter_colored_vertData1 = "s374:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
+kha_Shaders.painter_colored_vertData2 = "s354:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWM0IGZyYWdtZW50Q29sb3I7CmluIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
 kha_Shaders.painter_image_vertData0 = "s415:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSB2ZWMyIHRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgY29sb3I7CmF0dHJpYnV0ZSB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
 kha_Shaders.painter_image_vertData1 = "s479:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247CnZhcnlpbmcgbWVkaXVtcCB2ZWM0IGNvbG9yOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
 kha_Shaders.painter_image_vertData2 = "s444:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWMyIHRleENvb3JkOwppbiBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247Cm91dCBtZWRpdW1wIHZlYzQgY29sb3I7CmluIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICB0ZXhDb29yZCA9IHRleFBvc2l0aW9uOwogICAgY29sb3IgPSB2ZXJ0ZXhDb2xvcjsKfQoK";
